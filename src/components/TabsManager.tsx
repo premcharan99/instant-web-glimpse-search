@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, Plus, ExternalLink, Home } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export interface Tab {
   id: string;
@@ -12,6 +11,7 @@ export interface Tab {
 
 const TabsManager = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [tabs, setTabs] = useState<Tab[]>([]);
 
   // Initialize with a home tab if none exist
@@ -26,6 +26,50 @@ const TabsManager = () => {
       setTabs([homeTab]);
     }
   }, []);
+
+  // Listen for tab navigation events from SearchResult clicks
+  useEffect(() => {
+    const handleTabNavigation = (event: CustomEvent) => {
+      const { url, title } = event.detail;
+      
+      // Update active tab URL and title
+      const updatedTabs = tabs.map(tab => 
+        tab.isActive 
+          ? { ...tab, url: `/view?url=${encodeURIComponent(url)}`, title: title || 'Loading...' } 
+          : tab
+      );
+      setTabs(updatedTabs);
+    };
+
+    window.addEventListener('tab-navigation', handleTabNavigation as EventListener);
+    return () => {
+      window.removeEventListener('tab-navigation', handleTabNavigation as EventListener);
+    };
+  }, [tabs]);
+
+  // Keep track of route changes to update the active tab URL
+  useEffect(() => {
+    if (tabs.length > 0) {
+      const currentPath = location.pathname + location.search;
+      const activeTabIndex = tabs.findIndex(tab => tab.isActive);
+      
+      if (activeTabIndex !== -1 && tabs[activeTabIndex].url !== currentPath) {
+        const updatedTabs = [...tabs];
+        updatedTabs[activeTabIndex].url = currentPath;
+        
+        // Update title based on the route
+        if (currentPath === '/') {
+          updatedTabs[activeTabIndex].title = 'Home';
+        } else if (currentPath.startsWith('/search')) {
+          const searchParams = new URLSearchParams(location.search);
+          const query = searchParams.get('q') || '';
+          updatedTabs[activeTabIndex].title = `Search: ${query}`;
+        }
+        
+        setTabs(updatedTabs);
+      }
+    }
+  }, [location, tabs]);
 
   const addNewTab = () => {
     // Set all existing tabs to inactive
@@ -92,7 +136,6 @@ const TabsManager = () => {
     setTabs(updatedTabs);
   };
 
-  // Update active tab information based on navigation
   const updateActiveTab = (title: string, url: string) => {
     const updatedTabs = tabs.map(tab => 
       tab.isActive 

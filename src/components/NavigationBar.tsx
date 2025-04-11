@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, RefreshCw, Home, Search } from 'lucide-react';
 
@@ -14,7 +14,7 @@ const NavigationBar = ({ onSearch, currentUrl = '' }: NavigationBarProps) => {
   const [urlInput, setUrlInput] = useState(currentUrl);
 
   // Update input when URL changes
-  React.useEffect(() => {
+  useEffect(() => {
     setUrlInput(currentUrl);
   }, [currentUrl]);
 
@@ -53,9 +53,13 @@ const NavigationBar = ({ onSearch, currentUrl = '' }: NavigationBarProps) => {
         url = 'https://' + url;
       }
       
-      // For production, you would handle external navigation differently
-      // For this demo, we'll just redirect to the search page with the URL as query
-      onSearch('url:' + url);
+      // For internal browser view, navigate to the view page with the URL
+      navigate(`/view?url=${encodeURIComponent(url)}`);
+      
+      // Update active tab with new URL (dispatch custom event)
+      window.dispatchEvent(new CustomEvent('tab-navigation', { 
+        detail: { url, title: url }
+      }));
     }
   };
 

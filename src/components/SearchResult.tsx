@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ExternalLink, ThumbsUp, ThumbsDown, Share2 } from 'lucide-react';
 
 interface SearchResultProps {
@@ -11,7 +12,21 @@ interface SearchResultProps {
 }
 
 const SearchResult = ({ title, url, snippet, favicon, lastUpdated }: SearchResultProps) => {
+  const navigate = useNavigate();
   const displayUrl = url.length > 60 ? url.substring(0, 60) + '...' : url;
+  
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    // Update the active tab URL to the clicked link
+    // This should be done through a context or state management
+    window.dispatchEvent(new CustomEvent('tab-navigation', { 
+      detail: { url, title }
+    }));
+    
+    // Navigate to the URL within our app's routing system
+    // We'll encode the external URL in the path for our internal routing
+    navigate(`/view?url=${encodeURIComponent(url)}`);
+  };
   
   return (
     <div className="mb-6 hover:bg-gray-50 p-3 rounded-lg transition-colors">
@@ -27,8 +42,7 @@ const SearchResult = ({ title, url, snippet, favicon, lastUpdated }: SearchResul
       
       <a 
         href={url} 
-        target="_blank" 
-        rel="noopener noreferrer" 
+        onClick={handleLinkClick}
         className="group text-lg font-medium text-blue-700 hover:underline mb-1 flex items-center"
       >
         {title}
