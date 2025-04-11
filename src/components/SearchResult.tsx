@@ -17,14 +17,13 @@ const SearchResult = ({ title, url, snippet, favicon, lastUpdated }: SearchResul
   
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
+    
     // Update the active tab URL to the clicked link
-    // This should be done through a context or state management
     window.dispatchEvent(new CustomEvent('tab-navigation', { 
       detail: { url, title }
     }));
     
     // Navigate to the URL within our app's routing system
-    // We'll encode the external URL in the path for our internal routing
     navigate(`/view?url=${encodeURIComponent(url)}`);
   };
   
