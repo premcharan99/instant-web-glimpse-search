@@ -7,6 +7,7 @@ import SearchResults from '@/components/SearchResults';
 import Footer from '@/components/Footer';
 import { searchWeb, SearchResult } from '@/services/searchService';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { toast } from "@/hooks/use-toast";
 
 const SearchPage = () => {
   const location = useLocation();
@@ -24,10 +25,39 @@ const SearchPage = () => {
       
       setIsLoading(true);
       try {
+        // Show toast for search initiation
+        toast({
+          title: "Searching...",
+          description: `Finding results for "${query}"`,
+          duration: 2000,
+        });
+        
         const searchResults = await searchWeb(query);
         setResults(searchResults);
+        
+        // Show toast for search completion
+        if (searchResults.length > 0) {
+          toast({
+            title: "Search complete",
+            description: `Found ${searchResults.length} results for "${query}"`,
+            duration: 3000,
+          });
+        } else {
+          toast({
+            variant: "destructive",
+            title: "No results found",
+            description: `No matches for "${query}". Try different keywords.`,
+            duration: 3000,
+          });
+        }
       } catch (error) {
         console.error('Search error:', error);
+        toast({
+          variant: "destructive",
+          title: "Search failed",
+          description: "An error occurred while searching. Please try again.",
+          duration: 5000,
+        });
       } finally {
         setIsLoading(false);
       }

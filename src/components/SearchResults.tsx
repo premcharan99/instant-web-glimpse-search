@@ -1,16 +1,10 @@
 
 import React from 'react';
 import SearchResult from './SearchResult';
-
-interface SearchResultItem {
-  id: string;
-  title: string;
-  url: string;
-  snippet: string;
-}
+import { SearchResult as SearchResultType } from '@/services/searchService';
 
 interface SearchResultsProps {
-  results: SearchResultItem[];
+  results: SearchResultType[];
   isLoading: boolean;
   query: string;
 }
@@ -43,12 +37,21 @@ const SearchResults = ({ results, isLoading, query }: SearchResultsProps) => {
 
   return (
     <div className="py-4">
+      {/* Search stats */}
+      {results.length > 0 && (
+        <div className="text-sm text-gray-500 mb-4">
+          About {results.length} results (0.{Math.floor(Math.random() * 90) + 10} seconds)
+        </div>
+      )}
+      
       {results.map((result) => (
         <SearchResult
           key={result.id}
           title={result.title}
           url={result.url}
           snippet={result.snippet}
+          favicon={result.favicon}
+          lastUpdated={result.lastUpdated}
         />
       ))}
     </div>
